@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AZDEL GROUP - Coming Soon</title>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: 'Bank Gothic Medium BT', sans-serif;
+            overflow: hidden;
+        }
+
+        .bg-image {
+            background-image: url(https://i.pinimg.com/1200x/20/5b/41/205b410c27031d3945cb2ede1e31c010.jpg);
+            height: 100%;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .bg-image::before {
+            content: "";
+            position: absolute;
+            top: 0; right: 0; bottom: 0; left: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1;
+        }
+
+        .content {
+            color: white;
+            text-align: center;
+            z-index: 2;
+            text-transform: uppercase;
+        }
+
+        .main-title {
+            font-size: 60px;
+            font-weight: bold;
+            margin: 0;
+            letter-spacing: 5px;
+        }
+
+        .sub-title {
+            font-size: 24px;
+            margin-top: 200px;
+            letter-spacing: 5px;
+        }
+
+        /* --- SƏNİN İSTƏKLƏRİNƏ ƏSASƏN ƏLAVƏ EDİLƏNLƏR --- */
+        
+        /* 1. İdeya mətni üçün kiçik şrift */
+        .small-text {
+            font-size: 14px; 
+            letter-spacing: 3px;
+            margin-top: 15px; 
+        }
+
+        /* 3. Dil seçimi düymələrinin dizaynı */
+        .lang-switch {
+            position: absolute;
+            top: 30px;
+            right: 40px;
+            z-index: 10;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            letter-spacing: 2px;
+            display: flex;
+            gap: 10px;
+        }
+        .lang-switch span {
+            opacity: 0.5;
+            transition: 0.3s;
+        }
+        .lang-switch span.active {
+            opacity: 1;
+            font-weight: bold;
+        }
+
+        /* 2. Mausun arxasınca gələn dalğalı xətt üçün canvas */
+        #mouse-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* Yazılara və düymələrə klik etməyə mane olmaması üçün */
+            z-index: 9999;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Dil keçidi modulu -->
+    <div class="lang-switch">
+        <span id="lang-az" class="active" onclick="changeLang('az')">AZ</span>
+        <span id="lang-en" onclick="changeLang('en')">EN</span>
+    </div>
+
+    <!-- Düz xətt üçün kətan -->
+    <canvas id="mouse-canvas"></canvas>
+
+    <div class="bg-image">
+        <div class="content">
+            <h1 class="main-title">AZDEL GROUP</h1>
+            <!-- Şrifti kiçiltdim və tərcümə üçün id verdim -->
+            <p class="small-text" id="slogan">İdeyaları memarlığa çeviririk.</p>
+            <p class="sub-title">COMING SOON</p>
+        </div>
+    </div>
+
+    <script>
+        // --- DİL SEÇİMİ FUNKSİYASI ---
+        const texts = {
+            az: { slogan: "İdeyaları memarlığa çeviririk." },
+            en: { slogan: "We turn ideas into architecture." }
+        };
+
+        function changeLang(lang) {
+            document.getElementById('slogan').innerText = texts[lang].slogan;
+            document.getElementById('lang-az').classList.remove('active');
+            document.getElementById('lang-en').classList.remove('active');
+            document.getElementById('lang-' + lang).classList.add('active');
+        }
+
+        // --- MAUSUN ARXASINCA GƏLƏN DALĞALI AĞ XƏTT ---
+        const canvas = document.getElementById('mouse-canvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        let mouseX = 0, mouseY = 0;
+        let lagX = 0, lagY = 0;
+        
+        const points = [];
+        const maxPoints = 20; // Dalğanın uzunluğu 
+        let time = 100;
+
+        window.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        function drawWaveLine() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Gecikmiş nöqtə kursorun arxasınca yavaşca gəlir
+            lagX += (mouseX - lagX) * 0.2;
+            lagY += (mouseY - lagY) * 0.1;
+
+            time += 0.05; // Dalğalanma sürəti
+
+            const waveAmplitude = 10; // Dalğanın hündürlüyü (radius)
+            const waveFrequency = 0.5; // Dalğanın tezliyi (nə qədər sıx olacağı)
+
+            // Yeni dalğa nöqtəsini hesabla (sine dalğası ilə)
+            const nextPoint = {
+                x: lagX + Math.sin(time + (points.length * waveFrequency)) * waveAmplitude,
+                y: lagY + Math.cos(time + (points.length * waveFrequency)) * waveAmplitude,
+            };
+
+            points.push(nextPoint);
+            if (points.length > maxPoints) {
+                points.shift();
+            }
+
+            // Nöqtələri hamar bir əyri ilə birləşdir
+            if (points.length > 1) {
+                ctx.beginPath();
+                ctx.moveTo(points[0].x, points[0].y);
+                
+                for (let i = 1; i < points.length; i++) {
+                    const point = points[i];
+                    const nextPoint = points[i + 1] || points[i];
+                    const xc = (point.x + nextPoint.x) / 2;
+                    const yc = (point.y + nextPoint.y) / 2;
+                    ctx.quadraticCurveTo(point.x, point.y, xc, yc); // Hamar əyri
+                }
+
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)'; // Ağ rəng
+                ctx.lineWidth = 2; // Xəttin qalınlığı
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.stroke();
+            }
+
+            requestAnimationFrame(drawWaveLine);
+        }
+
+        drawWaveLine();
+    </script>
+</body>
+</html>
